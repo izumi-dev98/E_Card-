@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Navigate, NavLink, Route, Routes } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 import citizenImage from "./assets/citizen.jpg";
 import emperorImage from "./assets/emperor.jpg";
 import slaveImage from "./assets/slave.jpg";
@@ -859,6 +860,7 @@ function App() {
         <Route path="/rules" element={<RulesPage />} />
         <Route path="/leaderboard" element={<LeaderboardPage scoreboard={scoreboard} />} />
       </Routes>
+      <Analytics />
     </Shell>
   );
 }
