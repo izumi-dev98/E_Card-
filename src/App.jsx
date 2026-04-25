@@ -264,10 +264,10 @@ function GamePage({ game, summary, onReset, onPlay, onNextRound }) {
 
   return (
     <>
-      <section className="game-board relative flex min-h-0 flex-1 flex-col rounded-[1.5rem] px-5 py-4">
+      <section className="game-board relative flex min-h-0 flex-1 flex-col rounded-[1.5rem] px-3 py-3 sm:px-5 sm:py-4">
         <div className="flex items-start justify-between gap-3">
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-2 sm:gap-3">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <RoundPill active={game.roundIndex === 0 && !game.isFinished} done={game.roundIndex > 0}>
                 R1
               </RoundPill>
@@ -275,17 +275,17 @@ function GamePage({ game, summary, onReset, onPlay, onNextRound }) {
                 R2
               </RoundPill>
             </div>
-            <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 sm:px-5 sm:py-3">
-              <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6 text-xs sm:text-sm">
-                <div className="flex items-center gap-2">
-                  <span className="text-slate-400">Round wins:</span>
+            <div className="rounded-lg sm:rounded-xl border border-white/10 bg-black/20 px-2 py-1.5 sm:px-3 sm:py-2 md:px-5 md:py-3">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1.5 sm:gap-2 md:gap-6 text-[10px] sm:text-xs md:text-sm">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <span className="text-slate-400">Rounds:</span>
                   <span className="font-bold text-emerald-300">{game.playerRoundWins}</span>
                   <span className="text-slate-500">—</span>
                   <span className="font-bold text-rose-300">{game.computerRoundWins}</span>
                 </div>
                 <div className="hidden sm:block h-4 w-[1px] bg-white/10"></div>
-                <div className="flex items-center gap-2">
-                  <span className="text-slate-400">Turn wins:</span>
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <span className="text-slate-400">Turns:</span>
                   <span className="font-bold text-amber-300">{game.playerTurnWins}</span>
                   <span className="text-slate-500">—</span>
                   <span className="font-bold text-amber-300">{game.computerTurnWins}</span>
@@ -297,10 +297,10 @@ function GamePage({ game, summary, onReset, onPlay, onNextRound }) {
           </div>
         </div>
 
-        <div className="mt-2 flex justify-center">
+        <div className="mt-1.5 sm:mt-2 flex justify-center">
           <div className="grid grid-cols-5 gap-0.5 sm:gap-1">
             {game.computerHand.map((_, index) => (
-              <div key={`enemy-${game.roundIndex}-${index}`} className="w-[40px] sm:w-[60px] md:w-[72px]">
+              <div key={`enemy-${game.roundIndex}-${index}`} className="w-[35px] sm:w-[60px] md:w-[72px]">
                 <CardFace hidden tiny />
               </div>
             ))}
@@ -310,42 +310,42 @@ function GamePage({ game, summary, onReset, onPlay, onNextRound }) {
         <div className="relative flex flex-1 items-center justify-center">
           <div className="board-line" />
 
-          <div className="absolute left-1/2 top-1/2 z-10 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border-[3px] border-[#242428] bg-[#8a8a8a] text-white shadow-2xl sm:h-20 sm:w-20 md:h-28 md:w-28">
-            <span className="text-base font-black leading-none sm:text-2xl md:text-3xl">{game.computerScore}</span>
-            <span className="my-0.5 h-[2px] w-5 rounded-full bg-[#2a2a2f] sm:w-7 md:w-8" />
-            <span className="text-base font-black leading-none sm:text-2xl md:text-3xl">{game.playerScore}</span>
+          <div className="absolute left-1/2 top-1/2 z-10 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border-[2px] border-[#242428] bg-[#8a8a8a] text-white shadow-2xl sm:h-16 sm:w-16 md:h-24 md:w-24">
+            <span className="text-sm font-black leading-none sm:text-xl md:text-2xl">{game.computerScore}</span>
+            <span className="my-0.5 h-[1.5px] w-4 rounded-full bg-[#2a2a2f] sm:h-[2px] sm:w-6 md:w-7" />
+            <span className="text-sm font-black leading-none sm:text-xl md:text-2xl">{game.playerScore}</span>
           </div>
 
           {/* Computer table card — left of center */}
-          <div className="absolute left-1/2 top-1/2 z-20 w-[45px] -translate-x-[calc(50%+70px)] -translate-y-1/2 sm:w-[70px] sm:-translate-x-[calc(50%+110px)] md:w-[86px] md:-translate-x-[calc(50%+140px)]">
+          <div className="absolute left-1/2 top-1/2 z-20 w-[38px] -translate-x-[calc(50%+55px)] -translate-y-1/2 sm:w-[65px] sm:-translate-x-[calc(50%+100px)] md:w-[80px] md:-translate-x-[calc(50%+130px)]">
             {game.computerTableCard ? (
               <CardFace cardKey={game.computerTableCard} hidden={!game.revealCards} tiny />
             ) : (
-              <div className="min-h-[60px] w-full rounded-xl border-2 border-dashed border-white/20 bg-white/5 backdrop-blur-sm sm:min-h-[90px] md:min-h-[120px] flex items-center justify-center">
-                <div className="h-6 w-6 rounded-full border-2 border-dashed border-white/30 sm:h-10 sm:w-10 md:h-12 md:w-12"></div>
+              <div className="min-h-[50px] w-full rounded-lg border-2 border-dashed border-white/20 bg-white/5 backdrop-blur-sm sm:min-h-[85px] sm:rounded-xl md:min-h-[105px] flex items-center justify-center">
+                <div className="h-5 w-5 rounded-full border-2 border-dashed border-white/30 sm:h-9 sm:w-9 md:h-11 md:w-11"></div>
               </div>
             )}
-            <p className="mt-1 text-center text-[7px] uppercase tracking-widest text-slate-400 sm:text-[8px]">CPU</p>
+            <p className="mt-0.5 sm:mt-1 text-center text-[6px] uppercase tracking-widest text-slate-400 sm:text-[7px] md:text-[8px]">CPU</p>
           </div>
 
           {/* Player table card — right of center */}
-          <div className="absolute left-1/2 top-1/2 z-20 w-[45px] translate-x-[calc(-50%+70px)] -translate-y-1/2 sm:w-[70px] sm:translate-x-[calc(-50%+110px)] md:w-[86px] md:translate-x-[calc(-50%+140px)]">
+          <div className="absolute left-1/2 top-1/2 z-20 w-[38px] translate-x-[calc(-50%+55px)] -translate-y-1/2 sm:w-[65px] sm:translate-x-[calc(-50%+100px)] md:w-[80px] md:translate-x-[calc(-50%+130px)]">
             {game.playerTableCard ? (
               <CardFace cardKey={game.playerTableCard} hidden={!game.revealCards} tiny />
             ) : (
-              <div className="min-h-[60px] w-full rounded-xl border-2 border-dashed border-white/20 bg-white/5 backdrop-blur-sm sm:min-h-[90px] md:min-h-[120px] flex items-center justify-center">
-                <div className="h-6 w-6 rounded-full border-2 border-dashed border-white/30 sm:h-10 sm:w-10 md:h-12 md:w-12"></div>
+              <div className="min-h-[50px] w-full rounded-lg border-2 border-dashed border-white/20 bg-white/5 backdrop-blur-sm sm:min-h-[85px] sm:rounded-xl md:min-h-[105px] flex items-center justify-center">
+                <div className="h-5 w-5 rounded-full border-2 border-dashed border-white/30 sm:h-9 sm:w-9 md:h-11 md:w-11"></div>
               </div>
             )}
-            <p className="mt-1 text-center text-[7px] uppercase tracking-widest text-slate-400 sm:text-[8px]">You</p>
+            <p className="mt-0.5 sm:mt-1 text-center text-[6px] uppercase tracking-widest text-slate-400 sm:text-[7px] md:text-[8px]">You</p>
           </div>
 
-          <div className="absolute right-2 top-1/2 z-20 flex w-[90px] -translate-y-1/2 flex-col gap-2 sm:right-4 sm:w-[140px] md:right-6 md:w-[160px]">
-            <div className="rounded-xl border border-white/10 bg-black/20 px-2 py-2 text-center text-[9px] text-slate-200 sm:px-3 sm:py-2.5 sm:text-[10px] md:text-xs">
-              <p className="font-semibold uppercase tracking-[0.2em] text-slate-300">
+          <div className="absolute right-1.5 top-1/2 z-20 flex w-[75px] -translate-y-1/2 flex-col gap-1.5 sm:right-3 sm:w-[120px] sm:gap-2 md:right-4 md:w-[150px]">
+            <div className="rounded-lg sm:rounded-xl border border-white/10 bg-black/20 px-1.5 py-1.5 text-center text-[8px] text-slate-200 sm:px-2.5 sm:py-2 sm:text-[9px] md:px-3 md:py-2.5 md:text-[10px]">
+              <p className="font-semibold uppercase tracking-[0.15em] sm:tracking-[0.2em] text-slate-300">
                 {game.phase === "countdown" ? `${game.countdown}s` : game.phase === "result" ? `Turn ${game.turnIndex}` : `Turn ${game.turnIndex + 1}`}
               </p>
-              <p className="mt-1 leading-4">{resultText}</p>
+              <p className="mt-0.5 sm:mt-1 leading-3 sm:leading-4">{resultText}</p>
             </div>
           </div>
         </div>
@@ -358,7 +358,7 @@ function GamePage({ game, summary, onReset, onPlay, onNextRound }) {
                 type="button"
                 disabled={game.phase !== "idle" || game.isFinished}
                 onClick={() => onPlay(index)}
-                className="w-[50px] transition hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-45 sm:w-[80px] md:w-[110px]"
+                className="w-[45px] transition hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-45 sm:w-[75px] md:w-[100px]"
               >
                 <CardFace cardKey={cardKey} tiny />
               </button>
