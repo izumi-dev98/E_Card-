@@ -303,7 +303,7 @@ function GamePage({ game, summary, onReset, onPlay, onNextRound, onMatchEnd }) {
 
         <div className="flex justify-center gap-3">
           {game.computerHand.map((cardKey, index) => (
-            <div key={`computer-${game.roundIndex}-${index}`} className="w-[70px] sm:w-[90px] md:w-[110px]">
+            <div key={`computer-${game.roundIndex}-${index}`} className="w-[60px] sm:w-[100px]">
               <CardFace cardKey={cardKey} hidden compact />
             </div>
           ))}
@@ -322,7 +322,7 @@ function GamePage({ game, summary, onReset, onPlay, onNextRound, onMatchEnd }) {
               type="button"
               disabled={game.phase !== "idle" || game.isFinished}
               onClick={() => onPlay(index)}
-              className="w-[70px] transition hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-45 sm:w-[90px] md:w-[110px]"
+              className="w-[60px] transition hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-45 sm:w-[100px]"
             >
               <CardFace cardKey={cardKey} compact />
             </button>
