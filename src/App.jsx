@@ -9,6 +9,7 @@ const STORAGE_KEY = "ecard-scoreboard-v5";
 const REVEAL_DELAY_MS = 5000;
 const RESULT_DELAY_MS = 2600;
 const ROUND_END_POPUP_DELAY_MS = 5000;
+const MATCH_END_POPUP_DELAY_MS = 4000;
 const DECK_SIZE = 5;
 const TURNS_TO_END_ROUND = 3;
 
@@ -34,12 +35,12 @@ const CARD_META = {
 };
 
 const RULE_LINES = [
-  "There are 2 rounds. First to 3 turn-wins takes the round.",
-  "Round 1: Player gets 1 King + 4 Citizen. Computer gets 1 Slave + 4 Citizen.",
-  "Round 2: Decks swap — Player gets 1 Slave + 4 Citizen. Computer gets 1 King + 4 Citizen.",
-  "After each turn, both hands reset to 5 fresh cards.",
-  "Two table cards stay face-down for 10 seconds, then reveal.",
-  "King or Citizen win = 1 point. Slave win = 3 points. Most round-wins takes the match.",
+  "ပွဲစဉ် ၂ ခု ကစားရမည်။ အလှည့် (၃) ခု အရင်အနိုင်ရသူသည် ထိုပွဲစဉ်၏ အနိုင်ရရှိသူ ဖြစ်မည်။",
+  "ပွဲစဉ် (၁): ကစားသမား - ရှင်ဘုရင် ၁ ကတ် + အရပ်သား ၄ ကတ်။ ကွန်ပျူတာ - ကျွန် ၁ ကတ် + အရပ်သား ၄ ကတ်။",
+  "ပွဲစဉ် (၂): ကစားသမား - ကျွန် ၁ ကတ် + အရပ်သား ၄ ကတ်။ ကွန်ပျူတာ - ရှင်ဘုရင် ၁ ကတ် + အရပ်သား ၄ ကတ်။",
+  "အလှည့်တိုင်းပြီးဆုံးပါက နှစ်ဖက်စလုံး၏ လက်ထဲတွင် ကတ် ၅ ကတ်စီ ပြန်လည်ဖြည့်တင်းပေးမည်။",
+  "ရွေးချယ်ထားသော ကတ်နှစ်ကတ်ကို ၅ စက္ကန့်ကြာ ပြပေးပါမည်။",
+  "ရှင်ဘုရင် သို့မဟုတ် အရပ်သား အနိုင်ရ = ၁ မှတ်။ ကျွန် အနိုင်ရ = ၃ မှတ်။ ပွဲစဉ်အများဆုံး အနိုင်ရသူက ပွဲကို အနိုင်ရမည်။",
 ];
 
 function createScoreboard() {
@@ -97,6 +98,7 @@ function createGameState() {
     lastBattle: null,
     isFinished: false,
     showRoundEndPopup: false,
+    showMatchEndPopup: false,
   };
 }
 
@@ -138,11 +140,9 @@ function persistScoreboard(scoreboard) {
 }
 
 function CardFace({ cardKey, hidden = false, compact = false, tiny = false }) {
-  const hiddenHeight = tiny ? "min-h-[180px]" : compact ? "min-h-[200px]" : "min-h-[260px]";
-
   if (hidden) {
     return (
-      <div className={`ecard-card ecard-back ${hiddenHeight}`}>
+      <div className="ecard-card ecard-back aspect-[3/4] w-full">
         <div className="ecard-back__inner" />
       </div>
     );
@@ -182,6 +182,8 @@ function Shell({ children }) {
         : "text-slate-200 hover:bg-white/10"
     }`;
 
+  const disabledLinkClass = "block rounded-xl px-4 py-3 text-sm font-semibold uppercase tracking-[0.22em] text-slate-500 cursor-not-allowed opacity-50";
+
   return (
     <main className="min-h-screen overflow-hidden p-1 text-white">
       <div className="flex min-h-[calc(100vh-0.5rem)] w-full flex-col gap-1">
@@ -203,12 +205,20 @@ function Shell({ children }) {
 
           {menuOpen && (
             <nav
-              className="absolute left-3 top-[calc(100%+8px)] z-50 min-w-[180px] rounded-[1.25rem] border border-white/10 bg-[#18181c]/95 p-2 shadow-2xl backdrop-blur"
+              className="absolute left-3 top-[calc(100%+8px)] z-50 min-w-[200px] rounded-[1.25rem] border border-white/10 bg-[#18181c]/95 p-2 shadow-2xl backdrop-blur"
               onClick={() => setMenuOpen(false)}
             >
               <NavLink to="/game" className={linkClass}>Game</NavLink>
               <NavLink to="/rules" className={linkClass}>Rules</NavLink>
               <NavLink to="/leaderboard" className={linkClass}>Leaderboard</NavLink>
+              <div className={disabledLinkClass}>
+                Online Match
+                <span className="ml-2 text-[10px] text-amber-400">(Coming Soon)</span>
+              </div>
+              <div className={disabledLinkClass}>
+                6 Round Match
+                <span className="ml-2 text-[10px] text-amber-400">(Coming Soon)</span>
+              </div>
             </nav>
           )}
         </header>
@@ -238,13 +248,20 @@ function RoundPill({ active, done, children }) {
 function ResultPopup({ title, subtitle, accent, onNext, nextLabel }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-      <div className={`relative flex flex-col items-center gap-5 rounded-[2rem] border ${accent} bg-[#18181c] px-10 py-10 shadow-2xl`}>
-        <p className="text-4xl font-black tracking-tight text-white">{title}</p>
-        {subtitle && <p className="text-sm text-slate-300">{subtitle}</p>}
+      <div className={`relative flex flex-col items-center gap-6 rounded-[2rem] border ${accent} bg-gradient-to-br from-[#18181c] to-[#0f0f12] px-12 py-12 shadow-2xl`}>
+        <div className="absolute -top-6 flex h-12 w-12 items-center justify-center rounded-full bg-amber-400 shadow-lg">
+          <span className="text-2xl">🏆</span>
+        </div>
+        <p className="text-5xl font-black tracking-tight text-white drop-shadow-lg">{title}</p>
+        {subtitle && (
+          <div className="rounded-xl border border-white/20 bg-white/5 px-6 py-3">
+            <p className="text-base text-slate-200">{subtitle}</p>
+          </div>
+        )}
         <button
           type="button"
           onClick={onNext}
-          className="mt-2 rounded-full bg-amber-400 px-8 py-3 text-sm font-bold uppercase tracking-[0.2em] text-slate-900 transition hover:bg-amber-300"
+          className="mt-4 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 px-10 py-4 text-base font-bold uppercase tracking-[0.2em] text-slate-900 shadow-lg transition hover:from-amber-300 hover:to-amber-400 hover:shadow-xl"
         >
           {nextLabel}
         </button>
@@ -254,118 +271,87 @@ function ResultPopup({ title, subtitle, accent, onNext, nextLabel }) {
 }
 
 
-function GamePage({ game, summary, onReset, onPlay, onNextRound }) {
+function GamePage({ game, summary, onReset, onPlay, onNextRound, onMatchEnd }) {
   const resultText = summary ?? game.status;
 
   const roundWonByPlayer = game.playerTurnWins > game.computerTurnWins && (game.playerTurnWins + game.computerTurnWins) >= TURNS_TO_END_ROUND;
   const roundWonByComputer = game.computerTurnWins > game.playerTurnWins && (game.playerTurnWins + game.computerTurnWins) >= TURNS_TO_END_ROUND;
   const showRoundPopup = game.showRoundEndPopup && (roundWonByPlayer || roundWonByComputer) && !game.isFinished;
-  const showMatchPopup = game.isFinished;
+  const showMatchPopup = game.showMatchEndPopup && game.isFinished;
 
   return (
     <>
-      <section className="game-board relative flex min-h-0 flex-1 flex-col rounded-[1.5rem] px-3 py-3 sm:px-5 sm:py-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex flex-col gap-2 sm:gap-3">
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <RoundPill active={game.roundIndex === 0 && !game.isFinished} done={game.roundIndex > 0}>
-                R1
-              </RoundPill>
-              <RoundPill active={game.roundIndex === 1 && !game.isFinished} done={game.isFinished}>
-                R2
-              </RoundPill>
-            </div>
-            <div className="rounded-lg sm:rounded-xl border border-white/10 bg-black/20 px-2 py-1.5 sm:px-3 sm:py-2 md:px-5 md:py-3">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1.5 sm:gap-2 md:gap-6 text-[10px] sm:text-xs md:text-sm">
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  <span className="text-slate-400">Rounds:</span>
-                  <span className="font-bold text-emerald-300">{game.playerRoundWins}</span>
-                  <span className="text-slate-500">—</span>
-                  <span className="font-bold text-rose-300">{game.computerRoundWins}</span>
-                </div>
-                <div className="hidden sm:block h-4 w-[1px] bg-white/10"></div>
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  <span className="text-slate-400">Turns:</span>
-                  <span className="font-bold text-amber-300">{game.playerTurnWins}</span>
-                  <span className="text-slate-500">—</span>
-                  <span className="font-bold text-amber-300">{game.computerTurnWins}</span>
-                  <span className="text-slate-500">/</span>
-                  <span className="font-semibold text-slate-300">3</span>
-                </div>
-              </div>
-            </div>
+      <section className="flex min-h-0 flex-1 flex-col items-center justify-center gap-8 px-4 py-8">
+        <div className="flex items-center justify-center gap-4">
+          <div className="flex items-center gap-2">
+            <RoundPill active={game.roundIndex === 0 && !game.isFinished} done={game.roundIndex > 0}>
+              R1
+            </RoundPill>
+            <RoundPill active={game.roundIndex === 1 && !game.isFinished} done={game.isFinished}>
+              R2
+            </RoundPill>
           </div>
+          <button
+            type="button"
+            onClick={onReset}
+            className="rounded-full bg-amber-400 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-slate-900 transition hover:bg-amber-300"
+          >
+            New Match
+          </button>
         </div>
 
-        <div className="mt-1.5 sm:mt-2 flex justify-center">
-          <div className="grid grid-cols-5 gap-0.5 sm:gap-1">
-            {game.computerHand.map((_, index) => (
-              <div key={`enemy-${game.roundIndex}-${index}`} className="w-[35px] sm:w-[60px] md:w-[72px]">
-                <CardFace hidden tiny />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="relative flex flex-1 items-center justify-center">
-          <div className="board-line" />
-
-          <div className="absolute left-1/2 top-1/2 z-10 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border-[2px] border-[#242428] bg-[#8a8a8a] text-white shadow-2xl sm:h-16 sm:w-16 md:h-24 md:w-24">
-            <span className="text-sm font-black leading-none sm:text-xl md:text-2xl">{game.computerScore}</span>
-            <span className="my-0.5 h-[1.5px] w-4 rounded-full bg-[#2a2a2f] sm:h-[2px] sm:w-6 md:w-7" />
-            <span className="text-sm font-black leading-none sm:text-xl md:text-2xl">{game.playerScore}</span>
-          </div>
-
-          {/* Computer table card — left of center */}
-          <div className="absolute left-1/2 top-1/2 z-20 w-[38px] -translate-x-[calc(50%+55px)] -translate-y-1/2 sm:w-[65px] sm:-translate-x-[calc(50%+100px)] md:w-[80px] md:-translate-x-[calc(50%+130px)]">
-            {game.computerTableCard ? (
-              <CardFace cardKey={game.computerTableCard} hidden={!game.revealCards} tiny />
-            ) : (
-              <div className="min-h-[50px] w-full rounded-lg border-2 border-dashed border-white/20 bg-white/5 backdrop-blur-sm sm:min-h-[85px] sm:rounded-xl md:min-h-[105px] flex items-center justify-center">
-                <div className="h-5 w-5 rounded-full border-2 border-dashed border-white/30 sm:h-9 sm:w-9 md:h-11 md:w-11"></div>
-              </div>
-            )}
-            <p className="mt-0.5 sm:mt-1 text-center text-[6px] uppercase tracking-widest text-slate-400 sm:text-[7px] md:text-[8px]">CPU</p>
-          </div>
-
-          {/* Player table card — right of center */}
-          <div className="absolute left-1/2 top-1/2 z-20 w-[38px] translate-x-[calc(-50%+55px)] -translate-y-1/2 sm:w-[65px] sm:translate-x-[calc(-50%+100px)] md:w-[80px] md:translate-x-[calc(-50%+130px)]">
-            {game.playerTableCard ? (
-              <CardFace cardKey={game.playerTableCard} hidden={!game.revealCards} tiny />
-            ) : (
-              <div className="min-h-[50px] w-full rounded-lg border-2 border-dashed border-white/20 bg-white/5 backdrop-blur-sm sm:min-h-[85px] sm:rounded-xl md:min-h-[105px] flex items-center justify-center">
-                <div className="h-5 w-5 rounded-full border-2 border-dashed border-white/30 sm:h-9 sm:w-9 md:h-11 md:w-11"></div>
-              </div>
-            )}
-            <p className="mt-0.5 sm:mt-1 text-center text-[6px] uppercase tracking-widest text-slate-400 sm:text-[7px] md:text-[8px]">You</p>
-          </div>
-
-          <div className="absolute right-1.5 top-1/2 z-20 flex w-[75px] -translate-y-1/2 flex-col gap-1.5 sm:right-3 sm:w-[120px] sm:gap-2 md:right-4 md:w-[150px]">
-            <div className="rounded-lg sm:rounded-xl border border-white/10 bg-black/20 px-1.5 py-1.5 text-center text-[8px] text-slate-200 sm:px-2.5 sm:py-2 sm:text-[9px] md:px-3 md:py-2.5 md:text-[10px]">
-              <p className="font-semibold uppercase tracking-[0.15em] sm:tracking-[0.2em] text-slate-300">
-                {game.phase === "countdown" ? `${game.countdown}s` : game.phase === "result" ? `Turn ${game.turnIndex}` : `Turn ${game.turnIndex + 1}`}
-              </p>
-              <p className="mt-0.5 sm:mt-1 leading-3 sm:leading-4">{resultText}</p>
+        <div className="flex justify-center gap-3">
+          {game.computerHand.map((cardKey, index) => (
+            <div key={`computer-${game.roundIndex}-${index}`} className="w-[60px] sm:w-[100px]">
+              <CardFace cardKey={cardKey} hidden compact />
             </div>
-          </div>
+          ))}
         </div>
 
-        <div className="mt-auto flex justify-center">
-          <div className="grid grid-cols-5 gap-0.5 sm:gap-1">
-            {game.playerHand.map((cardKey, index) => (
-              <button
-                key={`${game.roundIndex}-${cardKey}-${index}`}
-                type="button"
-                disabled={game.phase !== "idle" || game.isFinished}
-                onClick={() => onPlay(index)}
-                className="w-[45px] transition hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-45 sm:w-[75px] md:w-[100px]"
-              >
-                <CardFace cardKey={cardKey} tiny />
-              </button>
-            ))}
-          </div>
+        <div className="flex h-20 w-20 flex-col items-center justify-center rounded-full border-4 border-white/30 bg-black/40 text-white shadow-2xl sm:h-24 sm:w-24">
+          <span className="text-xl font-black leading-none sm:text-2xl">{game.computerScore}</span>
+          <span className="my-1 h-[2px] w-6 rounded-full bg-white/40 sm:w-8" />
+          <span className="text-xl font-black leading-none sm:text-2xl">{game.playerScore}</span>
+        </div>
+
+        <div className="flex justify-center gap-3">
+          {game.playerHand.map((cardKey, index) => (
+            <button
+              key={`player-${game.roundIndex}-${cardKey}-${index}`}
+              type="button"
+              disabled={game.phase !== "idle" || game.isFinished}
+              onClick={() => onPlay(index)}
+              className="w-[60px] transition hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-45 sm:w-[100px]"
+            >
+              <CardFace cardKey={cardKey} compact />
+            </button>
+          ))}
         </div>
       </section>
+
+      {(game.phase === "countdown" || game.phase === "result") && game.playerTableCard && game.computerTableCard && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+          <div className="flex items-center gap-8">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-[120px]">
+                <CardFace cardKey={game.computerTableCard} hidden={!game.revealCards} />
+              </div>
+              <p className="text-sm uppercase tracking-widest text-slate-300">CPU</p>
+            </div>
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-[120px]">
+                <CardFace cardKey={game.playerTableCard} hidden={!game.revealCards} />
+              </div>
+              <p className="text-sm uppercase tracking-widest text-slate-300">You</p>
+            </div>
+          </div>
+          {game.phase === "countdown" && (
+            <div className="absolute bottom-8 text-2xl font-bold text-white">
+              {game.countdown}s
+            </div>
+          )}
+        </div>
+      )}
 
       {showRoundPopup && (
         <ResultPopup
@@ -382,7 +368,10 @@ function GamePage({ game, summary, onReset, onPlay, onNextRound }) {
           title={summary}
           subtitle={`Final Score: You ${game.playerScore} — CPU ${game.computerScore} | Rounds: You ${game.playerRoundWins} — CPU ${game.computerRoundWins}`}
           accent={game.playerRoundWins > game.computerRoundWins ? "border-amber-400/40" : game.playerRoundWins < game.computerRoundWins ? "border-rose-400/40" : "border-white/20"}
-          onNext={onReset}
+          onNext={() => {
+            onMatchEnd();
+            onReset();
+          }}
           nextLabel="Play Again"
         />
       )}
@@ -393,7 +382,7 @@ function GamePage({ game, summary, onReset, onPlay, onNextRound }) {
 function RulesPage() {
   return (
     <section className="rounded-[2rem] border border-white/10 bg-black/25 p-6 backdrop-blur sm:p-8">
-      <h2 className="text-3xl font-black">Rules</h2>
+      <h2 className="text-3xl font-black">ကစားနည်း စည်းမျဉ်းများ</h2>
       <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {RULE_LINES.map((rule) => (
           <div key={rule} className="rounded-[1.5rem] border border-white/10 bg-white/5 p-5 text-sm leading-6 text-slate-200">
@@ -401,14 +390,96 @@ function RulesPage() {
           </div>
         ))}
       </div>
-      <div className="mt-8 rounded-[1.75rem] border border-white/10 bg-white/5 p-5 text-sm leading-7 text-slate-300">
-        <p>Round 1: Player gets 1 King and 4 Citizen. Computer gets 1 Slave and 4 Citizen.</p>
-        <p>Round 2: Player gets 1 Slave and 4 Citizen. Computer gets 1 King and 4 Citizen.</p>
-        <p>After each turn, both hands reset to 5 fresh cards.</p>
-        <p>Citizen defeats Slave.</p>
-        <p>King defeats Citizen.</p>
-        <p>Slave defeats King.</p>
-        <p>Same card against same card is a tie with no points.</p>
+
+      <div className="mt-8 rounded-[1.75rem] border border-white/10 bg-white/5 p-6">
+        <p className="font-bold text-amber-300 mb-6 text-lg">ကတ်များ စာရင်း</p>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="rounded-xl border border-sky-400/30 bg-sky-400/10 p-5">
+            <div className="flex justify-center mb-4">
+              <div className="w-32">
+                <img src={citizenImage} alt="Citizen" className="aspect-[3/4] w-full rounded-lg object-cover shadow-lg" />
+              </div>
+            </div>
+            <p className="text-center text-base font-bold text-sky-200">အရပ်သား (Citizen)</p>
+          </div>
+          <div className="rounded-xl border border-amber-400/30 bg-amber-400/10 p-5">
+            <div className="flex justify-center mb-4">
+              <div className="w-32">
+                <img src={emperorImage} alt="King" className="aspect-[3/4] w-full rounded-lg object-cover shadow-lg" />
+              </div>
+            </div>
+            <p className="text-center text-base font-bold text-amber-200">ရှင်ဘုရင် (King)</p>
+          </div>
+          <div className="rounded-xl border border-rose-400/30 bg-rose-400/10 p-5">
+            <div className="flex justify-center mb-4">
+              <div className="w-32">
+                <img src={slaveImage} alt="Slave" className="aspect-[3/4] w-full rounded-lg object-cover shadow-lg" />
+              </div>
+            </div>
+            <p className="text-center text-base font-bold text-rose-200">ကျွန် (Slave)</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-8 rounded-[1.75rem] border border-white/10 bg-white/5 p-6">
+        <p className="font-bold text-amber-300 mb-6 text-lg">အနိုင်အရှုံး သတ်မှတ်ချက်</p>
+        <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-3">
+          <div className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 p-5">
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <div className="w-20">
+                <img src={citizenImage} alt="Citizen" className="aspect-[3/4] w-full rounded-lg object-cover shadow-lg" />
+              </div>
+              <div className="text-2xl font-bold text-white">VS</div>
+              <div className="w-20">
+                <img src={slaveImage} alt="Slave" className="aspect-[3/4] w-full rounded-lg object-cover shadow-lg" />
+              </div>
+            </div>
+            <p className="text-center text-sm font-semibold text-emerald-200">အရပ်သား (Citizen)</p>
+            <p className="text-center text-xs text-slate-300 mt-1">ကျွန် (Slave) ကို နိုင်သည်</p>
+            <p className="text-center text-xs text-amber-300 mt-2 font-bold">+1 မှတ်</p>
+          </div>
+          <div className="rounded-xl border border-amber-400/30 bg-amber-400/10 p-5">
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <div className="w-20">
+                <img src={emperorImage} alt="King" className="aspect-[3/4] w-full rounded-lg object-cover shadow-lg" />
+              </div>
+              <div className="text-2xl font-bold text-white">VS</div>
+              <div className="w-20">
+                <img src={citizenImage} alt="Citizen" className="aspect-[3/4] w-full rounded-lg object-cover shadow-lg" />
+              </div>
+            </div>
+            <p className="text-center text-sm font-semibold text-amber-200">ရှင်ဘုရင် (King)</p>
+            <p className="text-center text-xs text-slate-300 mt-1">အရပ်သား (Citizen) ကို နိုင်သည်</p>
+            <p className="text-center text-xs text-amber-300 mt-2 font-bold">+1 မှတ်</p>
+          </div>
+          <div className="rounded-xl border border-rose-400/30 bg-rose-400/10 p-5">
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <div className="w-20">
+                <img src={slaveImage} alt="Slave" className="aspect-[3/4] w-full rounded-lg object-cover shadow-lg" />
+              </div>
+              <div className="text-2xl font-bold text-white">VS</div>
+              <div className="w-20">
+                <img src={emperorImage} alt="King" className="aspect-[3/4] w-full rounded-lg object-cover shadow-lg" />
+              </div>
+            </div>
+            <p className="text-center text-sm font-semibold text-rose-200">ကျွန် (Slave)</p>
+            <p className="text-center text-xs text-slate-300 mt-1">ရှင်ဘုရင် (King) ကို နိုင်သည်</p>
+            <p className="text-center text-xs text-rose-300 mt-2 font-bold">+3 မှတ်</p>
+          </div>
+        </div>
+        <div className="mt-6 rounded-xl border border-white/20 bg-white/5 p-5">
+          <div className="flex items-center justify-center gap-4 mb-3">
+            <div className="w-16">
+              <img src={citizenImage} alt="Citizen" className="aspect-[3/4] w-full rounded-lg object-cover shadow-lg" />
+            </div>
+            <div className="text-xl font-bold text-slate-400">=</div>
+            <div className="w-16">
+              <img src={citizenImage} alt="Citizen" className="aspect-[3/4] w-full rounded-lg object-cover shadow-lg" />
+            </div>
+          </div>
+          <p className="text-sm text-slate-300 text-center font-semibold mb-1">သရေ (Draw)</p>
+          <p className="text-xs text-slate-400 text-center">တူညီသောကတ်များ (ဥပမာ- အရပ်သား နှင့် အရပ်သား) ကျပါက သရေဖြစ်ပြီး အမှတ်မရရှိပါ။</p>
+        </div>
       </div>
     </section>
   );
@@ -417,63 +488,79 @@ function RulesPage() {
 function LeaderboardPage({ scoreboard }) {
   return (
     <section className="rounded-[2rem] border border-white/10 bg-black/25 p-6 backdrop-blur sm:p-8">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-3xl font-black">Leaderboard</h2>
-        <span className="rounded-full border border-white/10 px-3 py-1 text-xs uppercase tracking-[0.25em] text-slate-300">
+      <div className="flex items-center justify-between gap-3 mb-8">
+        <h2 className="text-3xl font-black text-amber-300">Leaderboard</h2>
+        <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-xs uppercase tracking-[0.25em] text-amber-200">
           localStorage
         </span>
       </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-5">
-          <p className="text-sm text-slate-400">Games</p>
-          <p className="mt-2 text-3xl font-black">{scoreboard.totalGames}</p>
+      <div className="mt-6 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="rounded-[1.5rem] border border-sky-400/30 bg-gradient-to-br from-sky-400/10 to-cyan-400/5 p-6 shadow-lg">
+          <p className="text-sm text-sky-300 font-semibold">Total Games</p>
+          <p className="mt-3 text-4xl font-black text-white">{scoreboard.totalGames}</p>
         </div>
-        <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-5">
-          <p className="text-sm text-slate-400">Your Wins</p>
-          <p className="mt-2 text-3xl font-black">{scoreboard.playerWins}</p>
+        <div className="rounded-[1.5rem] border border-emerald-400/30 bg-gradient-to-br from-emerald-400/10 to-green-400/5 p-6 shadow-lg">
+          <p className="text-sm text-emerald-300 font-semibold">Your Wins</p>
+          <p className="mt-3 text-4xl font-black text-white">{scoreboard.playerWins}</p>
         </div>
-        <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-5">
-          <p className="text-sm text-slate-400">Computer Wins</p>
-          <p className="mt-2 text-3xl font-black">{scoreboard.computerWins}</p>
+        <div className="rounded-[1.5rem] border border-rose-400/30 bg-gradient-to-br from-rose-400/10 to-red-400/5 p-6 shadow-lg">
+          <p className="text-sm text-rose-300 font-semibold">Computer Wins</p>
+          <p className="mt-3 text-4xl font-black text-white">{scoreboard.computerWins}</p>
         </div>
-        <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-5">
-          <p className="text-sm text-slate-400">Draws</p>
-          <p className="mt-2 text-3xl font-black">{scoreboard.draws}</p>
-        </div>
-      </div>
-
-      <div className="mt-4 grid gap-4 sm:grid-cols-2">
-        <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-5 text-sm text-slate-300">
-          Best player score: <span className="font-semibold text-white">{scoreboard.bestPlayerScore}</span>
-        </div>
-        <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-5 text-sm text-slate-300">
-          Best computer score: <span className="font-semibold text-white">{scoreboard.bestComputerScore}</span>
+        <div className="rounded-[1.5rem] border border-amber-400/30 bg-gradient-to-br from-amber-400/10 to-yellow-400/5 p-6 shadow-lg">
+          <p className="text-sm text-amber-300 font-semibold">Draws</p>
+          <p className="mt-3 text-4xl font-black text-white">{scoreboard.draws}</p>
         </div>
       </div>
 
-      <div className="mt-6 space-y-3">
-        {scoreboard.history.length > 0 ? (
-          scoreboard.history.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center justify-between rounded-[1.5rem] border border-white/10 bg-white/5 px-5 py-4 text-sm"
-            >
-              <span className="text-slate-300">
-                {item.outcome === "player"
-                  ? "You won"
-                  : item.outcome === "computer"
-                    ? "Computer won"
-                    : "Draw"}
-              </span>
-              <span className="font-semibold text-white">
-                {item.playerScore} - {item.computerScore}
-              </span>
-            </div>
-          ))
-        ) : (
-          <p className="text-sm text-slate-300">No matches saved yet.</p>
-        )}
+      <div className="mt-6 grid gap-6 sm:grid-cols-2">
+        <div className="rounded-[1.5rem] border border-emerald-400/30 bg-gradient-to-br from-emerald-400/10 to-green-400/5 p-6 shadow-lg">
+          <p className="text-sm text-emerald-300 font-semibold mb-2">Best Player Score</p>
+          <p className="text-3xl font-black text-white">{scoreboard.bestPlayerScore}</p>
+        </div>
+        <div className="rounded-[1.5rem] border border-rose-400/30 bg-gradient-to-br from-rose-400/10 to-red-400/5 p-6 shadow-lg">
+          <p className="text-sm text-rose-300 font-semibold mb-2">Best Computer Score</p>
+          <p className="text-3xl font-black text-white">{scoreboard.bestComputerScore}</p>
+        </div>
+      </div>
+
+      <div className="mt-8">
+        <h3 className="text-xl font-bold text-amber-300 mb-4">Match History</h3>
+        <div className="space-y-3">
+          {scoreboard.history.length > 0 ? (
+            scoreboard.history.map((item, index) => (
+              <div
+                key={item.id}
+                className="flex items-center justify-between rounded-[1.5rem] border border-white/10 bg-gradient-to-r from-white/5 to-white/10 px-6 py-4 shadow-md hover:border-white/20 transition"
+              >
+                <div className="flex items-center gap-4">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-sm font-bold text-slate-300">
+                    #{index + 1}
+                  </span>
+                  <span className={`text-base font-semibold ${
+                    item.outcome === "player"
+                      ? "text-emerald-300"
+                      : item.outcome === "computer"
+                        ? "text-rose-300"
+                        : "text-amber-300"
+                  }`}>
+                    {item.outcome === "player"
+                      ? "You Won"
+                      : item.outcome === "computer"
+                        ? "Computer Won"
+                        : "Draw"}
+                  </span>
+                </div>
+                <span className="text-lg font-bold text-white">
+                  {item.playerScore} - {item.computerScore}
+                </span>
+              </div>
+            ))
+          ) : (
+            <p className="text-center text-sm text-slate-400 py-8">No matches saved yet.</p>
+          )}
+        </div>
       </div>
     </section>
   );
@@ -578,6 +665,11 @@ function App() {
     clearTimers();
     saveGuardRef.current = "";
     setGame(createGameState());
+  }
+
+  function handleMatchEnd() {
+    clearTimers();
+    setGame((current) => ({ ...current, showMatchEndPopup: false }));
   }
 
   function moveToNextRoundOrFinish(current) {
@@ -703,11 +795,15 @@ function App() {
           const roundWonByComputer = roundFinished && current.computerTurnWins > current.playerTurnWins;
 
           if (current.isFinished) {
+            // Schedule match end popup to show after 4 seconds
+            resultTimeoutRef.current = window.setTimeout(() => {
+              setGame((c) => ({ ...c, showMatchEndPopup: true }));
+            }, MATCH_END_POPUP_DELAY_MS);
             return current;
           }
 
           if (roundFinished) {
-            // Schedule popup to show after 10 seconds
+            // Schedule popup to show after 5 seconds
             resultTimeoutRef.current = window.setTimeout(() => {
               setGame((c) => ({ ...c, showRoundEndPopup: true }));
             }, ROUND_END_POPUP_DELAY_MS);
@@ -759,7 +855,7 @@ function App() {
     <Shell>
       <Routes>
         <Route path="/" element={<Navigate to="/game" replace />} />
-        <Route path="/game" element={<GamePage game={game} summary={summary} onReset={resetGame} onPlay={playCard} onNextRound={nextRound} />} />
+        <Route path="/game" element={<GamePage game={game} summary={summary} onReset={resetGame} onPlay={playCard} onNextRound={nextRound} onMatchEnd={handleMatchEnd} />} />
         <Route path="/rules" element={<RulesPage />} />
         <Route path="/leaderboard" element={<LeaderboardPage scoreboard={scoreboard} />} />
       </Routes>
