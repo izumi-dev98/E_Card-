@@ -143,7 +143,7 @@ function persistScoreboard(scoreboard) {
 function CardFace({ cardKey, hidden = false, compact = false, tiny = false }) {
   if (hidden) {
     return (
-      <div className="ecard-card ecard-back aspect-[3/4] w-full">
+      <div className="ecard-card ecard-back aspect-[3/5] w-full">
         <div className="ecard-back__inner" />
       </div>
     );
@@ -153,7 +153,7 @@ function CardFace({ cardKey, hidden = false, compact = false, tiny = false }) {
 
   return (
     <div className="ecard-card overflow-hidden">
-      <img src={card.image} alt={card.label} className="aspect-[3/4] w-full object-cover" />
+      <img src={card.image} alt={card.label} className="aspect-[3/5] w-full object-cover" />
     </div>
   );
 }
@@ -303,7 +303,7 @@ function GamePage({ game, summary, onReset, onPlay, onNextRound, onMatchEnd }) {
 
         <div className="flex justify-center gap-3">
           {game.computerHand.map((cardKey, index) => (
-            <div key={`computer-${game.roundIndex}-${index}`} className="w-[60px] sm:w-[100px]">
+            <div key={`computer-${game.roundIndex}-${index}`} className="w-[70px] sm:w-[90px] md:w-[110px]">
               <CardFace cardKey={cardKey} hidden compact />
             </div>
           ))}
@@ -322,7 +322,7 @@ function GamePage({ game, summary, onReset, onPlay, onNextRound, onMatchEnd }) {
               type="button"
               disabled={game.phase !== "idle" || game.isFinished}
               onClick={() => onPlay(index)}
-              className="w-[60px] transition hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-45 sm:w-[100px]"
+              className="w-[70px] transition hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-45 sm:w-[90px] md:w-[110px]"
             >
               <CardFace cardKey={cardKey} compact />
             </button>
